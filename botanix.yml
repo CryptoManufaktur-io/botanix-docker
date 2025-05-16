@@ -68,7 +68,7 @@ services:
 
   bitcoin-signing-server:
     build:
-      context: ./btc-signing-server
+      context: ./bitcoin-signing-server
       dockerfile: Dockerfile
       args:
         - USER=btc-signing-server
