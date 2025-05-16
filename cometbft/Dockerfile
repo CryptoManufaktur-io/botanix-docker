@@ -35,7 +35,6 @@ RUN chown -R ${USER}:${USER} /cometbft && chmod -R 700 /cometbft
 
 # Cannot assume buildkit, hence no chmod
 COPY ./docker-entrypoint.sh /usr/local/bin/
-COPY ./genesis.json /cometbft/config
 
 # Copy bins
 COPY --from=build --chown=${USER}:${USER} /usr/bin/cometbft /usr/local/bin/

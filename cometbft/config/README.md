@@ -1,13 +1,12 @@
 # Files expected here
 
-## Added to the cometbft image at build time
+These filles will be loaded manually via:
+
+```bash
+docker compose run --rm import-validator-keys
+```
 
 - genesis.json
-
-## Imported into the volume
-
-Via `docker compose run --rm import-validator-keys`
-
 - node_key.json
 - priv_validator_key.json
 - priv_validator_state.json

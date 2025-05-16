@@ -198,11 +198,11 @@ services:
     command:
       - |
         echo "Importing validator key and state file from ./keys/cometbft into container"
+        cp /data/config/genesis.json /cometbft/config/
         cp /data/config/node_key.json /cometbft/config/
         cp /data/config/priv_validator_key.json /cometbft/config/
         cp /data/config/priv_validator_state.json /cometbft/data/
-        chown -R cosmos:cosmos /cometbft/config/node_key.json
-        chown -R cosmos:cosmos /cometbft/config/priv_validator_key.json
+        chown -R cosmos:cosmos /cometbft/config
         chown -R cosmos:cosmos /cometbft/data/priv_validator_state.json
         echo "Validator keys imported!"
 
