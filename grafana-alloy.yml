@@ -18,7 +18,7 @@ services:
     volumes:
       - /etc/hostname:/etc/hostname:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./alloy:/etc/alloy/  
+      - ./alloy:/etc/alloy/
       - alloy-data:/var/lib/alloy/data
     restart: unless-stopped
     privileged: true
