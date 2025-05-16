@@ -1,0 +1,10 @@
+.env*
+*.swp
+*.bak
+*.original
+custom.yml
+
+alloy/config.alloy
+bitcoin-signing-server/config
+cometbft/config
+reth/config
