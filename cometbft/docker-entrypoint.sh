@@ -13,7 +13,11 @@ if [[ ! -f /cometbft/.initialized ]]; then
   dasel put -f /cometbft/config/config.toml -v "3s" consensus.timeout_propose
   dasel put -f /cometbft/config/config.toml -v "1s" consensus.timeout_prevote
   dasel put -f /cometbft/config/config.toml -v "1s" consensus.timeout_precommit
-  dasel put -f /cometbft/config/config.toml -v "1s" consensus.timeout_commit
+  dasel put -f /cometbft/config/config.toml -v "5s" consensus.timeout_commit
+  dasel put -f /cometbft/config/config.toml -t bool -v false consensus.skip_timeout_commit
+  dasel put -f /cometbft/config/config.toml -v "nop" mempool.type
+  dasel put -f /cometbft/config/config.toml -v "" mempool.wal_dir
+  dasel put -f /cometbft/config/config.toml -t bool -v true instrumentation.prometheus
 
   touch /cometbft/.initialized
 else
