@@ -153,7 +153,7 @@ services:
       - bitcoin-signing-server
     <<: *logging
     volumes:
-      - ./reth:/reth/botanix_testnet/config:rw
+      - ./reth/config:/reth/botanix_testnet/config:rw
       - reth-data:/reth/botanix_testnet/data:rw
     labels:
         - traefik.enable=true
@@ -193,7 +193,7 @@ services:
     user: root
     volumes:
       - cometbft-data:/cometbft:rw
-      - ./keys/cometbft:/data/config:rw
+      - ./cometbft/config:/data/config:rw
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
@@ -203,7 +203,7 @@ services:
         cp /data/config/priv_validator_key.json /cometbft/config/
         cp /data/config/priv_validator_state.json /cometbft/data/
         chown -R cosmos:cosmos /cometbft/config
-        chown -R cosmos:cosmos /cometbft/data/priv_validator_state.json
+        chown -R cosmos:cosmos /cometbft/data
         echo "Validator keys imported!"
 
 volumes:
