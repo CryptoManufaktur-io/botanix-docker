@@ -1,0 +1,140 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  cometbft:
+    build:
+      context: ./cometbft
+      dockerfile: Dockerfile
+      args:
+        - USER=cosmos
+        - DOCKER_REPO=${COMETBFT_DOCKER_REPO}
+        - DOCKER_TAG=${COMETBFT_DOCKER_TAG}
+    image: cometbft:local
+    pull_policy: never
+    user: cosmos
+    restart: unless-stopped
+    environment:
+      - ALLOW_DUPLICATE_IP=TRUE
+      - LOG_LEVEL=DEBUG
+      - CHAIN_ID=${CHAIN_ID:-3737}
+      - MONIKER=${MONIKER}
+    ports:
+      - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
+      - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
+    <<: *logging
+    volumes:
+      - cometbft-data:/cometbft:rw
+    entrypoint:
+      - docker-entrypoint.sh
+      - cometbft
+      - node
+      - --home=/cometbft
+      - --proxy_app=reth:26658
+      - --moniker=${MONIKER}
+      - --p2p.persistent_peers=${COMETBFT_PERSISTENT_PEERS}
+      - --p2p.laddr=tcp://0.0.0.0:${CL_P2P_PORT:-26656}
+      - --rpc.laddr=tcp://0.0.0.0:${CL_RPC_PORT:-26657}
+    labels:
+        - traefik.enable=true
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.service=${CL_RPC_HOST:-botanix-cl}
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.entrypoints=websecure
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.rule=Host(`${CL_RPC_HOST:-botanix-cl}.${DOMAIN}`)
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.tls.certresolver=letsencrypt
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.service=${CL_RPC_HOST:-botanix-cl}
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.entrypoints=websecure
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
+        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.tls.certresolver=letsencrypt
+        - traefik.http.services.${CL_RPC_HOST:-botanix-cl}.loadbalancer.server.port=${EL_RPC_PORT}
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.service=${CL_RPC_LB:-botanix-cl-lb}
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.entrypoints=websecure
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.rule=Host(`${CL_RPC_LB:-botanix-cl-lb}.${DOMAIN}`)
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.tls.certresolver=letsencrypt
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.service=${CL_RPC_LB:-botanix-cl-lb}
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.entrypoints=websecure
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.rule=Host(`${WS_LB:-botanix-cl-lb-lb}.${DOMAIN}`)
+        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.tls.certresolver=letsencrypt
+        - traefik.http.services.${CL_RPC_LB:-botanix-cl-lb}.loadbalancer.server.port=${WS_PORT:-8546}
+        - metrics.scrape=true
+        - metrics.path=/metrics
+        - metrics.port=26660
+        - metrics.instance=cometbft
+        - metrics.network=${CHAIN_ID}
+
+  reth:
+    build:
+      context: ./reth
+      dockerfile: Dockerfile
+      args:
+        - USER=reth
+        - DOCKER_REPO=${RETH_DOCKER_REPO}
+        - DOCKER_TAG=${RETH_DOCKER_TAG}
+    image: reth:local
+    pull_policy: never
+    restart: unless-stopped
+    command:
+      - poa
+      - --federation-config-path=/reth/botanix_testnet/config/chain.toml
+      - --datadir=/reth/botanix_testnet/data
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=${EL_RPC_PORT:-8545}
+      - --http.api=debug,eth,net,trace,txpool,web3,rpc
+      - --http.corsdomain=*
+      - --ws.port=${EL_WS_PORT:-8546}
+      - -vvv
+      - --authrpc.addr=0.0.0.0
+      - --authrpc.port=8551
+      - --bitcoind.url=${BITCOIND_HOST}
+      - --bitcoind.username=${BITCOIND_USER}
+      - --bitcoind.password=${BITCOIND_PASS}
+      - --p2p-secret-key=/reth/botanix_testnet/config/discovery-secret
+      - --port=${EL_P2P_PORT:-30303}
+      - --btc-network=bitcoin
+      - --metrics=0.0.0.0:9001
+      - --abci-port=26658
+      - --abci-host=0.0.0.0
+      - --cometbft-rpc-port=26657
+      - --cometbft-rpc-host=cometbft
+      - --sync.enable_state_sync
+      - --sync.enable_historical_sync
+    ports:
+      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
+    <<: *logging
+    volumes:
+      - ./reth/config:/reth/botanix_testnet/config:rw
+      - reth-data:/reth/botanix_testnet/data:rw
+    labels:
+        - traefik.enable=true
+        - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
+        - traefik.http.routers.${RPC_HOST:-botanix}.entrypoints=websecure
+        - traefik.http.routers.${RPC_HOST:-botanix}.rule=Host(`${RPC_HOST:-botanix}.${DOMAIN}`)
+        - traefik.http.routers.${RPC_HOST:-botanix}.tls.certresolver=letsencrypt
+        - traefik.http.routers.${RPC_HOST:-botanix}lb.service=${RPC_HOST:-botanix}
+        - traefik.http.routers.${RPC_HOST:-botanix}lb.entrypoints=websecure
+        - traefik.http.routers.${RPC_HOST:-botanix}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
+        - traefik.http.routers.${RPC_HOST:-botanix}lb.tls.certresolver=letsencrypt
+        - traefik.http.services.${RPC_HOST:-botanix}.loadbalancer.server.port=${EL_RPC_PORT}
+        - traefik.http.routers.${WS_HOST:-botanixws}.service=${WS_HOST:-botanixws}
+        - traefik.http.routers.${WS_HOST:-botanixws}.entrypoints=websecure
+        - traefik.http.routers.${WS_HOST:-botanixws}.rule=Host(`${WS_HOST:-botanixws}.${DOMAIN}`)
+        - traefik.http.routers.${WS_HOST:-botanixws}.tls.certresolver=letsencrypt
+        - traefik.http.routers.${WS_HOST:-botanixws}lb.service=${WS_HOST:-botanixws}
+        - traefik.http.routers.${WS_HOST:-botanixws}lb.entrypoints=websecure
+        - traefik.http.routers.${WS_HOST:-botanixws}lb.rule=Host(`${WS_LB:-botanixws-lb}.${DOMAIN}`)
+        - traefik.http.routers.${WS_HOST:-botanixws}lb.tls.certresolver=letsencrypt
+        - traefik.http.services.${WS_HOST:-botanixws}.loadbalancer.server.port=${WS_PORT:-8546}
+        - metrics.scrape=true
+        - metrics.path=/metrics
+        - metrics.port=9001
+        - metrics.instance=reth
+        - metrics.network=${CHAIN_ID}
+
+volumes:
+  reth-data:
+  cometbft-data:
