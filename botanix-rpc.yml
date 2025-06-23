@@ -88,8 +88,6 @@ services:
       - --http.corsdomain=*
       - --ws.port=${EL_WS_PORT:-8546}
       - -vvv
-      - --authrpc.addr=0.0.0.0
-      - --authrpc.port=8551
       - --bitcoind.url=${BITCOIND_HOST}
       - --bitcoind.username=${BITCOIND_USER}
       - --bitcoind.password=${BITCOIND_PASS}
