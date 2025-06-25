@@ -107,7 +107,7 @@ services:
       - --metrics=0.0.0.0:9001
       - --abci-port=26658
       - --abci-host=0.0.0.0
-      - --cometbft-rpc-port=26657
+      - --cometbft-rpc-port=${CL_RPC_PORT:-26657}
       - --cometbft-rpc-host=cometbft
       - --sync.enable_state_sync
       - --sync.enable_historical_sync
