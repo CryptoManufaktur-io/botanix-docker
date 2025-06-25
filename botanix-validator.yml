@@ -120,7 +120,7 @@ services:
     restart: unless-stopped
     environment:
       - RETH_EXTRAS=${RETH_EXTRAS:-}
-    command:
+    entrypoint:
       - docker-entrypoint.sh
       - poa
       - --federation-config-path=/reth/config/chain.toml
