@@ -122,6 +122,7 @@ services:
       - RETH_EXTRAS=${RETH_EXTRAS:-}
     entrypoint:
       - docker-entrypoint.sh
+      - reth
       - poa
       - --federation-config-path=/reth/config/chain.toml
       - --datadir=/reth/data
