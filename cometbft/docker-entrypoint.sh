@@ -26,4 +26,4 @@ fi
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@"
+exec "$@" ${COMETBFT_EXTRAS}

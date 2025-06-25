@@ -22,10 +22,10 @@ RUN adduser \
     "${USER}" && \
     usermod -rG users ${USER}
 
-VOLUME /reth/botanix_testnet/data
+VOLUME /reth/data
 
-RUN mkdir -p /reth/botanix_testnet/data
-RUN mkdir /reth/botanix_testnet/config
+RUN mkdir -p /reth/data
+RUN mkdir /reth/config
 
 # Set correct permissions.
 RUN chown -R ${USER}:${USER} /reth && chmod -R 700 /reth
