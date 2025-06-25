@@ -31,7 +31,7 @@ services:
     <<: *logging
     volumes:
       - ./cometbft/config:/cometbft/tmp-config:rw
-      - cometbft-data:/cometbft:rw
+      - cometbft-data:/cometbft/data:rw
       - cometbft-config:/cometbft/config:rw
     entrypoint:
       - docker-entrypoint.sh
