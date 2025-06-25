@@ -23,7 +23,7 @@ RUN adduser \
     "${USER}" && \
     usermod -rG users ${USER}
 
-VOLUME /cometbft
+VOLUME /cometbft/data
 
 WORKDIR /cometbft
 
