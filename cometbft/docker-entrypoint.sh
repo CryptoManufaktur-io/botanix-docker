@@ -29,4 +29,4 @@ dasel put -f /cometbft/config/config.toml -t int -v 20 p2p.max_num_outbound_peer
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
-exec "$@"
+exec "$@" ${COMETBFT_EXTRAS}

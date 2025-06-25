@@ -117,8 +117,8 @@ services:
     restart: unless-stopped
     command:
       - poa
-      - --federation-config-path=/reth/botanix_testnet/config/chain.toml
-      - --datadir=/reth/botanix_testnet/data
+      - --federation-config-path=/reth/config/chain.toml
+      - --datadir=/reth/data
       - --http
       - --http.addr=0.0.0.0
       - --http.port=${EL_RPC_PORT:-8545}
@@ -126,7 +126,7 @@ services:
       - --http.corsdomain=*
       - --ws.port=${EL_WS_PORT:-8546}
       - -vvv
-      - --btc-signing-server-jwt-secret=/reth/botanix_testnet/config/jwt.hex
+      - --btc-signing-server-jwt-secret=/reth/config/jwt.hex
       - --authrpc.addr=0.0.0.0
       - --authrpc.port=8551
       - --btc-server=bitcoin-signing-server:8080
@@ -135,7 +135,7 @@ services:
       - --bitcoind.password=${BITCOIND_PASS}
       - --frost.min_signers=12
       - --frost.max_signers=16
-      - --p2p-secret-key=/reth/botanix_testnet/config/discovery-secret
+      - --p2p-secret-key=/reth/config/discovery-secret
       - --port=${EL_P2P_PORT:-30303}
       - --btc-network=bitcoin
       - --metrics=0.0.0.0:9001
@@ -154,8 +154,8 @@ services:
       - bitcoin-signing-server
     <<: *logging
     volumes:
-      - ./reth/config:/reth/botanix_testnet/config:rw
-      - reth-data:/reth/botanix_testnet/data:rw
+      - ./reth/config:/reth/config:rw
+      - reth-data:/reth/data:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}

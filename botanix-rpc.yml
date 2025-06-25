@@ -21,14 +21,16 @@ services:
     restart: unless-stopped
     environment:
       - ALLOW_DUPLICATE_IP=TRUE
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - CHAIN_ID=${CHAIN_ID:-3737}
       - MONIKER=${MONIKER}
+      - COMETBFT_EXTRAS=${COMETBFT_EXTRAS:-}
     ports:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
+      - ./cometbft/config:/cometbft/config:rw
       - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
@@ -79,19 +81,22 @@ services:
     restart: unless-stopped
     command:
       - poa
-      - --federation-config-path=/reth/botanix_testnet/config/chain.toml
-      - --datadir=/reth/botanix_testnet/data
+      - --federation-config-path=/reth/config/chain.toml
+      - --datadir=/reth/data
       - --http
       - --http.addr=0.0.0.0
       - --http.port=${EL_RPC_PORT:-8545}
       - --http.api=debug,eth,net,trace,txpool,web3,rpc
       - --http.corsdomain=*
+      - --ws
+      - --ws.addr=0.0.0.0
       - --ws.port=${EL_WS_PORT:-8546}
+      - --ws.api=debug,eth,net,trace,txpool,web3,rpc
       - -vvv
       - --bitcoind.url=${BITCOIND_HOST}
       - --bitcoind.username=${BITCOIND_USER}
       - --bitcoind.password=${BITCOIND_PASS}
-      - --p2p-secret-key=/reth/botanix_testnet/config/discovery-secret
+      - --p2p-secret-key=/reth/config/discovery-secret
       - --port=${EL_P2P_PORT:-30303}
       - --btc-network=bitcoin
       - --metrics=0.0.0.0:9001
@@ -105,8 +110,8 @@ services:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     <<: *logging
     volumes:
-      - ./reth/config:/reth/botanix_testnet/config:rw
-      - reth-data:/reth/botanix_testnet/data:rw
+      - ./reth/config:/reth/config:rw
+      - reth-data:/reth/data:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
