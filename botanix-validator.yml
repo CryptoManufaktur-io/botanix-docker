@@ -24,11 +24,13 @@ services:
       - LOG_LEVEL=DEBUG
       - CHAIN_ID=${CHAIN_ID:-3737}
       - MONIKER=${MONIKER}
+      - COMETBFT_EXTRAS=${COMETBFT_EXTRAS:-}
     ports:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
+      - ./cometbft/config:/cometbft/config:rw
       - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
@@ -124,7 +126,10 @@ services:
       - --http.port=${EL_RPC_PORT:-8545}
       - --http.api=debug,eth,net,trace,txpool,web3,rpc
       - --http.corsdomain=*
+      - --ws
+      - --ws.addr=0.0.0.0
       - --ws.port=${EL_WS_PORT:-8546}
+      - --ws.api=debug,eth,net,trace,txpool,web3,rpc
       - -vvv
       - --btc-signing-server-jwt-secret=/reth/config/jwt.hex
       - --authrpc.addr=0.0.0.0
