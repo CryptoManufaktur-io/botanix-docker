@@ -23,6 +23,7 @@ RUN adduser \
     usermod -rG users ${USER}
 
 VOLUME /reth/data
+VOLUME /reth/config
 
 RUN mkdir -p /reth/data
 RUN mkdir /reth/config
