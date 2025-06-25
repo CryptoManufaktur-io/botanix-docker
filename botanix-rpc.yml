@@ -30,8 +30,9 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
-      - ./cometbft/config:/cometbft/config:rw
+      - ./cometbft/config:/cometbft/tmp-config:rw
       - cometbft-data:/cometbft:rw
+      - cometbft-config:/cometbft/config:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -79,7 +80,10 @@ services:
     image: reth:local
     pull_policy: never
     restart: unless-stopped
+    environment:
+      - RETH_EXTRAS=${RETH_EXTRAS:-}
     command:
+      - docker-entrypoint.sh
       - poa
       - --federation-config-path=/reth/config/chain.toml
       - --datadir=/reth/data
@@ -110,8 +114,9 @@ services:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     <<: *logging
     volumes:
-      - ./reth/config:/reth/config:rw
+      - ./reth/config:/reth/tmp-config:rw
       - reth-data:/reth/data:rw
+      - reth-config:/reth/config:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
@@ -141,3 +146,5 @@ services:
 volumes:
   reth-data:
   cometbft-data:
+  reth-config:
+  cometbft-config:
