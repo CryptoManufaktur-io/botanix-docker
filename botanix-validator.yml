@@ -147,6 +147,7 @@ services:
       - --cometbft-rpc-host=cometbft
       - --sync.enable_state_sync
       - --sync.enable_historical_sync
+      - --block-fee-recipient-address=${REWARDS_RECIPIENT}
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     depends_on:
