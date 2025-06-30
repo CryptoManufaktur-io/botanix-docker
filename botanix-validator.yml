@@ -181,7 +181,7 @@ services:
         - metrics.instance=reth
         - metrics.network=${CHAIN_ID}
 
-  import-validator-keys:
+  import-cometbft-keys:
     profiles: ["tools"]
     build:
       context: ./cometbft
@@ -197,7 +197,7 @@ services:
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
-        echo "Importing validator key and state file from ./keys/cometbft into container"
+        echo "Importing validator key and state file from ./cometbft/config into container"
         cp /data/config/genesis.json /cometbft/config/
         cp /data/config/node_key.json /cometbft/config/
         cp /data/config/priv_validator_key.json /cometbft/config/
@@ -205,6 +205,30 @@ services:
         chown -R cosmos:cosmos /cometbft/config
         chown -R cosmos:cosmos /cometbft/data
         echo "Validator keys imported!"
+
+  import-btc-key:
+    profiles: ["tools"]
+    build:
+      context: ./bitcoin-signing-server
+      dockerfile: Dockerfile
+      args:
+        - USER=btc-signing-server
+        - DOCKER_REPO=${BTC_SIGNING_SERVER_DOCKER_REPO}
+        - DOCKER_TAG=${BTC_SIGNING_SERVER_DOCKER_TAG}
+    image: bitcoin-signing-server:local
+    pull_policy: never
+    user: root
+    volumes:
+      - ./bitcoin-signing-server/keys:/keys:rw
+      - signing-server-data:/bitcoin-server/data:rw
+    entrypoint: ["/bin/bash","-c"]
+    command:
+      - |
+        echo "Importing db file from ./bitcoin-signing-server/keys into container"
+        mkdir -p /bitcoin-server/data/db
+        cp /keys/db /bitcoin-server/data/db/db
+        chown -R btc-signing-server:btc-signing-server /bitcoin-server/data/
+        echo "BTC Signing Key Imported!"
 
 volumes:
   signing-server-data:
