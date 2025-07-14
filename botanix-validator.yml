@@ -38,6 +38,8 @@ services:
       - --proxy_app=reth:26658
       - --moniker=${MONIKER}
       - --p2p.persistent_peers=${COMETBFT_PERSISTENT_PEERS}
+      - --p2p.max_num_inbound_peers=100
+      - --p2p.max_num_outbound_peers=20
       - --p2p.laddr=tcp://0.0.0.0:${CL_P2P_PORT:-26656}
       - --rpc.laddr=tcp://0.0.0.0:${CL_RPC_PORT:-26657}
     labels:
