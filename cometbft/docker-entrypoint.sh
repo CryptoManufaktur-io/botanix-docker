@@ -18,6 +18,8 @@ if [[ ! -f /cometbft/.initialized ]]; then
   dasel put -f /cometbft/config/config.toml -v "nop" mempool.type
   dasel put -f /cometbft/config/config.toml -v "" mempool.wal_dir
   dasel put -f /cometbft/config/config.toml -t bool -v true instrumentation.prometheus
+  dasel put -f /cometbft/config/config.toml -v 100 p2p.max_num_inbound_peers
+  dasel put -f /cometbft/config/config.toml -v 20 p2p.max_num_outbound_peers
 
   touch /cometbft/.initialized
 else
