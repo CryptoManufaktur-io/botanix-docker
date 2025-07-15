@@ -21,15 +21,20 @@ services:
     restart: unless-stopped
     environment:
       - ALLOW_DUPLICATE_IP=TRUE
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - CHAIN_ID=${CHAIN_ID:-3737}
+      - CL_P2P_PORT=${CL_P2P_PORT:-26656}
       - MONIKER=${MONIKER}
+      - COMETBFT_EXTRAS=${COMETBFT_EXTRAS:-}
+      - COMETBFT_PERSISTENT_PEERS=${COMETBFT_PERSISTENT_PEERS:-}
     ports:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
-      - cometbft-data:/cometbft:rw
+      - ./cometbft/config:/cometbft/tmp-config:rw
+      - cometbft-data:/cometbft/data:rw
+      - cometbft-config:/cometbft/config:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -77,27 +82,34 @@ services:
     image: reth:local
     pull_policy: never
     restart: unless-stopped
-    command:
+    environment:
+      - RETH_EXTRAS=${RETH_EXTRAS:-}
+    entrypoint:
+      - docker-entrypoint.sh
+      - reth
       - poa
-      - --federation-config-path=/reth/botanix_testnet/config/chain.toml
-      - --datadir=/reth/botanix_testnet/data
+      - --federation-config-path=/reth/config/chain.toml
+      - --datadir=/reth/data
       - --http
       - --http.addr=0.0.0.0
       - --http.port=${EL_RPC_PORT:-8545}
       - --http.api=debug,eth,net,trace,txpool,web3,rpc
       - --http.corsdomain=*
+      - --ws
+      - --ws.addr=0.0.0.0
       - --ws.port=${EL_WS_PORT:-8546}
+      - --ws.api=debug,eth,net,trace,txpool,web3,rpc
       - -vvv
       - --bitcoind.url=${BITCOIND_HOST}
       - --bitcoind.username=${BITCOIND_USER}
       - --bitcoind.password=${BITCOIND_PASS}
-      - --p2p-secret-key=/reth/botanix_testnet/config/discovery-secret
+      - --p2p-secret-key=/reth/config/discovery-secret
       - --port=${EL_P2P_PORT:-30303}
       - --btc-network=bitcoin
       - --metrics=0.0.0.0:9001
       - --abci-port=26658
       - --abci-host=0.0.0.0
-      - --cometbft-rpc-port=26657
+      - --cometbft-rpc-port=${CL_RPC_PORT:-26657}
       - --cometbft-rpc-host=cometbft
       - --sync.enable_state_sync
       - --sync.enable_historical_sync
@@ -105,8 +117,9 @@ services:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     <<: *logging
     volumes:
-      - ./reth/config:/reth/botanix_testnet/config:rw
-      - reth-data:/reth/botanix_testnet/data:rw
+      - ./reth/config:/reth/tmp-config:rw
+      - reth-data:/reth/data:rw
+      - reth-config:/reth/config:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
@@ -136,3 +149,5 @@ services:
 volumes:
   reth-data:
   cometbft-data:
+  reth-config:
+  cometbft-config:
