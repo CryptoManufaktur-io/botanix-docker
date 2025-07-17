@@ -18,13 +18,14 @@ if [[ ! -f /cometbft/.initialized ]]; then
   dasel put -f /cometbft/config/config.toml -v "nop" mempool.type
   dasel put -f /cometbft/config/config.toml -v "" mempool.wal_dir
   dasel put -f /cometbft/config/config.toml -t bool -v true instrumentation.prometheus
-  dasel put -f /cometbft/config/config.toml -v 100 p2p.max_num_inbound_peers
-  dasel put -f /cometbft/config/config.toml -v 20 p2p.max_num_outbound_peers
 
   touch /cometbft/.initialized
 else
   echo "Already initialized!"
 fi
+
+dasel put -f /cometbft/config/config.toml -t int -v 100 p2p.max_num_inbound_peers
+dasel put -f /cometbft/config/config.toml -t int -v 20 p2p.max_num_outbound_peers
 
 # Word splitting is desired for the command line parameters
 # shellcheck disable=SC2086
