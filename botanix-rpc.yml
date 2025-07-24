@@ -32,7 +32,7 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
-      - ./cometbft/config:/cometbft/tmp-config:rw
+      - ./config:/config:rw
       - cometbft-data:/cometbft/data:rw
       - cometbft-config:/cometbft/config:rw
     entrypoint:
@@ -117,7 +117,7 @@ services:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     <<: *logging
     volumes:
-      - ./reth/config:/reth/tmp-config:rw
+      - ./config:/config:rw
       - reth-data:/reth/data:rw
       - reth-config:/reth/config:rw
     labels:

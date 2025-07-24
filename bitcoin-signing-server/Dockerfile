@@ -23,8 +23,10 @@ RUN adduser \
     "${USER}" && \
     usermod -rG users ${USER}
 
-VOLUME /bitcoin-signing-server/data
+VOLUME /bitcoin-server/data
 WORKDIR /bitcoin-server/data
+
+RUN mkdir -p /bitcoin-server/config
 
 # Set correct permissions.
 RUN chown -R ${USER}:${USER} /bitcoin-server/data && chmod -R 700 /bitcoin-server/data
@@ -32,6 +34,8 @@ RUN chown -R ${USER}:${USER} /bitcoin-server/data && chmod -R 700 /bitcoin-serve
 # Copy bins
 COPY --from=build --chown=${USER}:${USER} /usr/local/bin/server /usr/local/bin/
 COPY --from=dasel --chown=${USER}:${USER} /usr/local/bin/dasel /usr/local/bin/
+
+COPY ./config.toml /bitcoin-server/config/config.toml
 
 # Belt and suspenders
 RUN chmod -R 755 /usr/local/bin/*

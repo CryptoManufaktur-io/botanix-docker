@@ -9,3 +9,5 @@ bitcoin-signing-server/config
 bitcoin-signing-server/keys
 cometbft/config
 reth/config
+keys/
+config/
