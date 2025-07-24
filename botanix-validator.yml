@@ -32,7 +32,7 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
     volumes:
-      - ./cometbft/config:/cometbft/tmp-config:rw
+      - ./config:/config:rw
       - cometbft-data:/cometbft/data:rw
       - cometbft-config:/cometbft/config:rw
     entrypoint:
@@ -86,7 +86,9 @@ services:
       - BITCOIND_HOST=${BITCOIND_HOST}
       - BITCOIND_USER=${BITCOIND_USER}
       - BITCOIND_PASS=${BITCOIND_PASS}
-    command:
+    entrypoint:
+      - docker-entrypoint.sh
+      - server
       - --btc-network=bitcoin
       - --identifier=${FROST_IDENTIFIER}
       - --address=0.0.0.0:8080
@@ -106,7 +108,7 @@ services:
       - --coordinator=0
     <<: *logging
     volumes:
-      - ./bitcoin-signing-server/config:/bitcoin-server/config:rw
+      - ./config:/bitcoin-server/config:rw
       - signing-server-data:/bitcoin-server/data:rw
 
   reth:
@@ -166,7 +168,7 @@ services:
       - bitcoin-signing-server
     <<: *logging
     volumes:
-      - ./reth/config:/reth/tmp-config:rw
+      - ./config:/config:rw
       - reth-data:/reth/data:rw
       - reth-config:/reth/config:rw
     labels:
@@ -207,12 +209,11 @@ services:
     user: root
     volumes:
       - cometbft-data:/cometbft:rw
-      - ./cometbft/config:/data/config:rw
+      - ./keys/cometbft:/data/config:rw
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
-        echo "Importing validator key and state file from ./cometbft/config into container"
-        cp /data/config/genesis.json /cometbft/config/
+        echo "Importing validator key and state file from ./keys/cometbft into container"
         cp /data/config/node_key.json /cometbft/config/
         cp /data/config/priv_validator_key.json /cometbft/config/
         cp /data/config/priv_validator_state.json /cometbft/data/
@@ -233,12 +234,12 @@ services:
     pull_policy: never
     user: root
     volumes:
-      - ./bitcoin-signing-server/keys:/keys:rw
+      - ./keys/bitcoin-signing-server/keys:/keys:rw
       - signing-server-data:/bitcoin-server/data:rw
     entrypoint: ["/bin/bash","-c"]
     command:
       - |
-        echo "Importing db file from ./bitcoin-signing-server/keys into container"
+        echo "Importing db file from ./keys/bitcoin-signing-server into container"
         mkdir -p /bitcoin-server/data/db
         cp /keys/db /bitcoin-server/data/db/db
         chown -R btc-signing-server:btc-signing-server /bitcoin-server/data/

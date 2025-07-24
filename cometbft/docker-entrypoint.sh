@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cp /cometbft/tmp-config/* /cometbft/config
-
 if [[ ! -f /cometbft/.initialized ]]; then
   echo "Initializing!"
 

@@ -15,7 +15,20 @@ The `./botanixd` script can be used as a quick-start:
 
 `cp default.env .env`
 
-`nano .env` and adjust variables as needed, particularly mention-important-vars-here
+`nano .env` and adjust variables as needed.
+
+If running an RPC node:
+
+- Add `botanix-rpc.yml` to `COMPOSE_FILE` to `.env`
+- Place the `chain.toml` file on the `config/` folder for Reth.
+
+If running a Validator node:
+
+- Add `botanix-validator.yml` to `COMPOSE_FILE` in `.env`
+- Place the `chain.toml`, `discovery-secret` and `jwt.hex` files on the `config/` folder for Reth and btc-signing-server.
+- Place the `node_key.json`, `priv_validator_key.json` and `priv_validator_state.json` files into the `keys/` folder for CometBFT.
+- Run `docker compose run --rm import-cometbft-keys`
+- If you have a bitcoin-signing-server `db` file backup, place it in `keys/bitcoin-signing-server` and run `docker compose run --rm import-btc-key`.
 
 `./botanixd up`
 
