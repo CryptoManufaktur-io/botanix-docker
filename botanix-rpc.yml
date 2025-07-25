@@ -31,9 +31,6 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
-    volumes:
-      - ./config:/config:rw
-      - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -44,6 +41,9 @@ services:
       - --p2p.persistent_peers=${COMETBFT_PERSISTENT_PEERS}
       - --p2p.laddr=tcp://0.0.0.0:${CL_P2P_PORT:-26656}
       - --rpc.laddr=tcp://0.0.0.0:${CL_RPC_PORT:-26657}
+    volumes:
+      - ./config:/config:rw
+      - cometbft-data:/cometbft:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.service=${CL_RPC_HOST:-botanix-cl}
