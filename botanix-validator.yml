@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     environment:
       - ALLOW_DUPLICATE_IP=TRUE
-      - LOG_LEVEL=DEBUG
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
       - CHAIN_ID=${CHAIN_ID:-3737}
       - CL_P2P_PORT=${CL_P2P_PORT:-26656}
       - MONIKER=${MONIKER}
@@ -31,9 +31,6 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
-    volumes:
-      - ./config:/config:rw
-      - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -44,6 +41,9 @@ services:
       - --p2p.persistent_peers=${COMETBFT_PERSISTENT_PEERS}
       - --p2p.laddr=tcp://0.0.0.0:${CL_P2P_PORT:-26656}
       - --rpc.laddr=tcp://0.0.0.0:${CL_RPC_PORT:-26657}
+    volumes:
+      - ./config:/config:rw
+      - cometbft-data:/cometbft:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.service=${CL_RPC_HOST:-botanix-cl}
@@ -107,7 +107,7 @@ services:
       - --coordinator=0
     <<: *logging
     volumes:
-      - ./config:/bitcoin-server/config:rw
+      - ./config:/config:rw
       - signing-server-data:/bitcoin-server/data:rw
 
   reth:
@@ -168,8 +168,7 @@ services:
     <<: *logging
     volumes:
       - ./config:/config:rw
-      - reth-data:/reth/data:rw
-      - reth-config:/reth/config:rw
+      - reth-data:/reth:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
