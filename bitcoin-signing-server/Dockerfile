@@ -32,6 +32,9 @@ RUN mkdir -p /bitcoin-server/config
 COPY ./config.toml /bitcoin-server/config/config.toml
 RUN chown -R ${USER}:${USER} /bitcoin-server && chmod -R 700 /bitcoin-server
 
+# Cannot assume buildkit, hence no chmod
+COPY ./docker-entrypoint.sh /usr/local/bin/
+
 # Copy bins
 COPY --from=build --chown=${USER}:${USER} /usr/local/bin/app /usr/local/bin/server
 COPY --from=dasel --chown=${USER}:${USER} /usr/local/bin/dasel /usr/local/bin/
