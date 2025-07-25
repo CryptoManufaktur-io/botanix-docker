@@ -35,7 +35,7 @@ RUN chown -R ${USER}:${USER} /reth && chmod -R 700 /reth
 COPY ./docker-entrypoint.sh /usr/local/bin/
 
 # Copy bins
-COPY --from=build --chown=${USER}:${USER} /usr/local/bin/reth /usr/local/bin/
+COPY --from=build --chown=${USER}:${USER} /usr/local/bin/app /usr/local/bin/reth
 COPY --from=dasel --chown=${USER}:${USER} /usr/local/bin/dasel /usr/local/bin/
 
 # Belt and suspenders
