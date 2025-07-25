@@ -33,7 +33,7 @@ RUN mkdir -p /bitcoin-server/data
 RUN chown -R ${USER}:${USER} /bitcoin-server && chmod -R 700 /bitcoin-server
 
 # Copy bins
-COPY --from=build --chown=${USER}:${USER} /usr/local/bin/server /usr/local/bin/
+COPY --from=build --chown=${USER}:${USER} /usr/local/bin/app /usr/local/bin/server
 COPY --from=dasel --chown=${USER}:${USER} /usr/local/bin/dasel /usr/local/bin/
 
 COPY ./config.toml /bitcoin-server/config/config.toml
