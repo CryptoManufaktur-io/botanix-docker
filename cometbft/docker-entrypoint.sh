@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cp /config/genesis.json /cometbft/config/
+
 if [[ ! -f /cometbft/.initialized ]]; then
   echo "Initializing!"
 
