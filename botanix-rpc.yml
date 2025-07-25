@@ -33,8 +33,7 @@ services:
     <<: *logging
     volumes:
       - ./config:/config:rw
-      - cometbft-data:/cometbft/data:rw
-      - cometbft-config:/cometbft/config:rw
+      - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -118,8 +117,7 @@ services:
     <<: *logging
     volumes:
       - ./config:/config:rw
-      - reth-data:/reth/data:rw
-      - reth-config:/reth/config:rw
+      - reth-data:/reth:rw
     labels:
         - traefik.enable=true
         - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
@@ -149,5 +147,3 @@ services:
 volumes:
   reth-data:
   cometbft-data:
-  reth-config:
-  cometbft-config:

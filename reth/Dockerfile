@@ -22,7 +22,7 @@ RUN adduser \
     "${USER}" && \
     usermod -rG users ${USER}
 
-VOLUME /reth/data
+VOLUME /reth
 WORKDIR /reth
 
 RUN mkdir -p /reth/data

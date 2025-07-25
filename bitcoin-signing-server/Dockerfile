@@ -23,13 +23,14 @@ RUN adduser \
     "${USER}" && \
     usermod -rG users ${USER}
 
-VOLUME /bitcoin-server/data
-WORKDIR /bitcoin-server/data
+VOLUME /bitcoin-server
+WORKDIR /bitcoin-server
 
 RUN mkdir -p /bitcoin-server/config
+RUN mkdir -p /bitcoin-server/data
 
 # Set correct permissions.
-RUN chown -R ${USER}:${USER} /bitcoin-server/data && chmod -R 700 /bitcoin-server/data
+RUN chown -R ${USER}:${USER} /bitcoin-server && chmod -R 700 /bitcoin-server
 
 # Copy bins
 COPY --from=build --chown=${USER}:${USER} /usr/local/bin/server /usr/local/bin/

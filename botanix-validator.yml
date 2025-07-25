@@ -33,8 +33,7 @@ services:
     <<: *logging
     volumes:
       - ./config:/config:rw
-      - cometbft-data:/cometbft/data:rw
-      - cometbft-config:/cometbft/config:rw
+      - cometbft-data:/cometbft:rw
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -249,5 +248,3 @@ volumes:
   signing-server-data:
   reth-data:
   cometbft-data:
-  reth-config:
-  cometbft-config:
