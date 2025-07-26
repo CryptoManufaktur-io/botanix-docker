@@ -15,6 +15,7 @@ if [[ ! -f /cometbft/.initialized ]]; then
 
   dasel put -f /cometbft/config/config.toml -v "tcp://0.0.0.0:${CL_P2P_PORT}" p2p.laddr
   dasel put -f /cometbft/config/config.toml -v "${COMETBFT_PERSISTENT_PEERS}" p2p.persistent_peers
+  dasel put -f /cometbft/config/config.toml -v "${COMETBFT_UNCONDITIONAL_PEER_IDS}" p2p.unconditional_peer_ids
 
   dasel put -f /cometbft/config/config.toml -v "3s" consensus.timeout_propose
   dasel put -f /cometbft/config/config.toml -v "1s" consensus.timeout_prevote
