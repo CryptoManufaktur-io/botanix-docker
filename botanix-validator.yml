@@ -162,6 +162,7 @@ services:
       - --sync.enable_state_sync
       - --sync.enable_historical_sync
       - --block-fee-recipient-address=${REWARDS_RECIPIENT}
+      - --txpool.minimum-priority-fee=0
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     depends_on:
