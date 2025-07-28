@@ -52,4 +52,4 @@ add it to `COMPOSE_FILE` in `.env`
 
 botanix-docker Docker uses a semver scheme.
 
-This is botanix-docker Docker v1.1.0
+This is botanix-docker Docker v1.1.1
