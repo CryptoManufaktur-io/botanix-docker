@@ -7,6 +7,20 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
+  init:
+    restart: "no"
+    build:
+      context: ./init
+      dockerfile: Dockerfile
+    image: init:botanix
+    pull_policy: never
+    volumes:
+      - cometbft-data:/cometbft
+      - reth-data:/reth
+    environment:
+      - RETH_SNAPSHOT=${RETH_SNAPSHOT}
+      - COMETBFT_SNAPSHOT=${COMETBFT_SNAPSHOT}
+
   cometbft:
     build:
       context: ./cometbft
@@ -32,6 +46,9 @@ services:
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
       - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
     <<: *logging
+    depends_on:
+      init:
+        condition: service_completed_successfully
     entrypoint:
       - docker-entrypoint.sh
       - cometbft
@@ -113,6 +130,9 @@ services:
       - --cometbft-rpc-host=cometbft
       - --sync.enable_state_sync
       - --sync.enable_historical_sync
+    depends_on:
+      init:
+        condition: service_completed_successfully
     ports:
       - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     <<: *logging
