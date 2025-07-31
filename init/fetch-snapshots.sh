@@ -9,7 +9,6 @@ if [ -n "${RETH_SNAPSHOT}" ] && [ ! -d "/reth/data/static_files/" ]; then
   cd /reth/snapshot
 
   eval "__url=${RETH_SNAPSHOT}"
-#shellcheck disable=SC2154
   aria2c -c -x6 -s6 --auto-file-renaming=false --conditional-get=true --allow-overwrite=true "${__url}"
   filename=$(echo "${__url}" | awk -F/ '{print $NF}')
   if [[ "${filename}" =~ \.tar\.zst$ ]]; then
