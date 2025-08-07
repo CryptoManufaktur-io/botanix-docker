@@ -7,70 +7,6 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
-  cometbft:
-    build:
-      context: ./cometbft
-      dockerfile: Dockerfile
-      args:
-        - USER=cosmos
-        - DOCKER_REPO=${COMETBFT_DOCKER_REPO}
-        - DOCKER_TAG=${COMETBFT_DOCKER_TAG}
-    image: cometbft:local
-    pull_policy: never
-    user: cosmos
-    restart: unless-stopped
-    environment:
-      - ALLOW_DUPLICATE_IP=TRUE
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - CHAIN_ID=${CHAIN_ID:-3737}
-      - CL_P2P_PORT=${CL_P2P_PORT:-26656}
-      - MONIKER=${MONIKER}
-      - COMETBFT_EXTRAS=${COMETBFT_EXTRAS:-}
-      - COMETBFT_PERSISTENT_PEERS=${COMETBFT_PERSISTENT_PEERS:-}
-      - COMETBFT_UNCONDITIONAL_PEER_IDS=${COMETBFT_UNCONDITIONAL_PEER_IDS:-}
-    ports:
-      - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/tcp
-      - ${CL_P2P_PORT:-26656}:${CL_P2P_PORT:-26656}/udp
-    <<: *logging
-    entrypoint:
-      - docker-entrypoint.sh
-      - cometbft
-      - node
-      - --home=/cometbft
-      - --proxy_app=reth:26658
-      - --moniker=${MONIKER}
-      - --p2p.persistent_peers=${COMETBFT_PERSISTENT_PEERS}
-      - --p2p.laddr=tcp://0.0.0.0:${CL_P2P_PORT:-26656}
-      - --rpc.laddr=tcp://0.0.0.0:${CL_RPC_PORT:-26657}
-    volumes:
-      - ./config:/config:rw
-      - cometbft-data:/cometbft:rw
-    labels:
-        - traefik.enable=true
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.service=${CL_RPC_HOST:-botanix-cl}
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.entrypoints=websecure
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.rule=Host(`${CL_RPC_HOST:-botanix-cl}.${DOMAIN}`)
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}.tls.certresolver=letsencrypt
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.service=${CL_RPC_HOST:-botanix-cl}
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.entrypoints=websecure
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
-        - traefik.http.routers.${CL_RPC_HOST:-botanix-cl}lb.tls.certresolver=letsencrypt
-        - traefik.http.services.${CL_RPC_HOST:-botanix-cl}.loadbalancer.server.port=${EL_RPC_PORT}
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.service=${CL_RPC_LB:-botanix-cl-lb}
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.entrypoints=websecure
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.rule=Host(`${CL_RPC_LB:-botanix-cl-lb}.${DOMAIN}`)
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}.tls.certresolver=letsencrypt
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.service=${CL_RPC_LB:-botanix-cl-lb}
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.entrypoints=websecure
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.rule=Host(`${WS_LB:-botanix-cl-lb-lb}.${DOMAIN}`)
-        - traefik.http.routers.${CL_RPC_LB:-botanix-cl-lb}lb.tls.certresolver=letsencrypt
-        - traefik.http.services.${CL_RPC_LB:-botanix-cl-lb}.loadbalancer.server.port=${WS_PORT:-8546}
-        - metrics.scrape=true
-        - metrics.path=/metrics
-        - metrics.port=26660
-        - metrics.instance=cometbft
-        - metrics.network=${CHAIN_ID}
-
   bitcoin-signing-server:
     build:
       context: ./bitcoin-signing-server
@@ -112,18 +48,6 @@ services:
       - signing-server-data:/bitcoin-server/data:rw
 
   reth:
-    build:
-      context: ./reth
-      dockerfile: Dockerfile
-      args:
-        - USER=reth
-        - DOCKER_REPO=${RETH_DOCKER_REPO}
-        - DOCKER_TAG=${RETH_DOCKER_TAG}
-    image: reth:local
-    pull_policy: never
-    restart: unless-stopped
-    environment:
-      - RETH_EXTRAS=${RETH_EXTRAS:-}
     entrypoint:
       - docker-entrypoint.sh
       - reth
@@ -163,39 +87,8 @@ services:
       - --sync.enable_historical_sync
       - --block-fee-recipient-address=${REWARDS_RECIPIENT}
       - --txpool.minimum-priority-fee=0
-    ports:
-      - ${EL_P2P_PORT:-30303}:${EL_P2P_PORT:-30303}
     depends_on:
       - bitcoin-signing-server
-    <<: *logging
-    volumes:
-      - ./config:/config:rw
-      - reth-data:/reth:rw
-    labels:
-        - traefik.enable=true
-        - traefik.http.routers.${RPC_HOST:-botanix}.service=${RPC_HOST:-botanix}
-        - traefik.http.routers.${RPC_HOST:-botanix}.entrypoints=websecure
-        - traefik.http.routers.${RPC_HOST:-botanix}.rule=Host(`${RPC_HOST:-botanix}.${DOMAIN}`)
-        - traefik.http.routers.${RPC_HOST:-botanix}.tls.certresolver=letsencrypt
-        - traefik.http.routers.${RPC_HOST:-botanix}lb.service=${RPC_HOST:-botanix}
-        - traefik.http.routers.${RPC_HOST:-botanix}lb.entrypoints=websecure
-        - traefik.http.routers.${RPC_HOST:-botanix}lb.rule=Host(`${RPC_LB}.${DOMAIN}`)
-        - traefik.http.routers.${RPC_HOST:-botanix}lb.tls.certresolver=letsencrypt
-        - traefik.http.services.${RPC_HOST:-botanix}.loadbalancer.server.port=${EL_RPC_PORT}
-        - traefik.http.routers.${WS_HOST:-botanixws}.service=${WS_HOST:-botanixws}
-        - traefik.http.routers.${WS_HOST:-botanixws}.entrypoints=websecure
-        - traefik.http.routers.${WS_HOST:-botanixws}.rule=Host(`${WS_HOST:-botanixws}.${DOMAIN}`)
-        - traefik.http.routers.${WS_HOST:-botanixws}.tls.certresolver=letsencrypt
-        - traefik.http.routers.${WS_HOST:-botanixws}lb.service=${WS_HOST:-botanixws}
-        - traefik.http.routers.${WS_HOST:-botanixws}lb.entrypoints=websecure
-        - traefik.http.routers.${WS_HOST:-botanixws}lb.rule=Host(`${WS_LB:-botanixws-lb}.${DOMAIN}`)
-        - traefik.http.routers.${WS_HOST:-botanixws}lb.tls.certresolver=letsencrypt
-        - traefik.http.services.${WS_HOST:-botanixws}.loadbalancer.server.port=${WS_PORT:-8546}
-        - metrics.scrape=true
-        - metrics.path=/metrics
-        - metrics.port=9001
-        - metrics.instance=reth
-        - metrics.network=${CHAIN_ID}
 
   import-cometbft-keys:
     profiles: ["tools"]
@@ -247,5 +140,3 @@ services:
 
 volumes:
   signing-server-data:
-  reth-data:
-  cometbft-data:
