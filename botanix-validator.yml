@@ -83,8 +83,6 @@ services:
       - --abci-host=0.0.0.0
       - --cometbft-rpc-port=${CL_RPC_PORT:-26657}
       - --cometbft-rpc-host=cometbft
-      - --sync.enable_state_sync
-      - --sync.enable_historical_sync
       - --block-fee-recipient-address=${REWARDS_RECIPIENT}
       - --txpool.minimum-priority-fee=0
     depends_on:
