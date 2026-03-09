@@ -1050,6 +1050,8 @@ __full_help() {
   echo "    stops the ${__app_name} and destroys all data stores"
   echo "  space"
   echo "    show Docker volume space usage"
+  echo "  check-sync"
+  echo "    check whether the node is in sync"
   echo "  help"
   echo "    print this help screen"
   echo
@@ -1082,7 +1084,7 @@ __me="./$(basename "${BASH_SOURCE[0]}")"
 trap '__handle_error $? $LINENO' ERR
 trap '__handle_error $? $LINENO' EXIT
 
-if [[ "$#" -eq 0 || "$*" = "--help" || "$*" = "-h" || "$*" = "update --help" || "$*" = "update -h" ]]; then
+if [[ "$#" -eq 0 || ( "$1" =~ ^(-h|--help)$ && "${2:-}" != "check-sync" ) || "$*" = "update --help" || "$*" = "update -h" ]]; then
   help "$@"
   exit 0
 fi
@@ -1149,6 +1151,8 @@ fi
 case "$__command" in
   help|update|up|start|down|stop|restart|version|logs|cmd|terminate|space)
     $__command "$@";;
+  check-sync)
+    ./scripts/check_sync.sh "$@";;
   *)
     echo "Unrecognized command $__command"
     help
