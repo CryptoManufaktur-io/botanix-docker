@@ -77,7 +77,7 @@ fi
 # ── Apply defaults after env loading ─────────────────────────────────
 [[ -z "$COMPOSE_SERVICE" && -z "$CONTAINER" ]] && COMPOSE_SERVICE="reth"
 [[ -z "$LOCAL_RPC" ]]  && LOCAL_RPC="http://127.0.0.1:${EL_RPC_PORT:-8545}"
-[[ -z "$PUBLIC_RPC" ]] && PUBLIC_RPC="https://node.botanixlabs.dev"
+# PUBLIC_RPC default is set after container/tools are ready (network-aware)
 
 # ── Container helpers ─────────────────────────────────────────────────
 __resolve_container() {
@@ -164,6 +164,17 @@ __hex_to_dec() {
   printf '%d' "0x$hex" 2>/dev/null || echo "0"
 }
 
+# ── Network-aware public RPC default ─────────────────────────────────
+__default_public_rpc() {
+  local chain_id_hex
+  chain_id_hex=$(__rpc_call "$LOCAL_RPC" "eth_chainId" | __exec jq -r '.result // empty') || true
+  case "$chain_id_hex" in
+    0xe34) echo "https://node.botanixlabs.dev" ;;   # testnet (3636)
+    0xe35) echo "https://rpc.botanixlabs.com" ;;    # mainnet (3637)
+    *)     echo "" ;;
+  esac
+}
+
 # ── Main ──────────────────────────────────────────────────────────────
 __resolve_container
 
@@ -173,6 +184,15 @@ if __in_container; then
   __check_tools
   echo "✅ Tools available in container"
   echo
+fi
+
+# Auto-detect public RPC from local node's chain ID if not set
+if [[ -z "$PUBLIC_RPC" ]]; then
+  PUBLIC_RPC=$(__default_public_rpc)
+  if [[ -z "$PUBLIC_RPC" ]]; then
+    echo "Could not auto-detect network. Use --public-rpc <url> or set PUBLIC_RPC in .env" >&2
+    exit 2
+  fi
 fi
 
 echo "⏳ Latest block comparison"
