@@ -101,7 +101,7 @@ __in_container() {
 
 __exec() {
   if __in_container; then
-    docker exec "$CONTAINER" "$@"
+    docker exec -i "$CONTAINER" "$@"
   else
     "$@"
   fi
