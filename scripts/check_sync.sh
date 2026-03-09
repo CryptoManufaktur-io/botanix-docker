@@ -61,7 +61,7 @@ __load_env() {
     [[ -z "$key" ]] && continue
     # Only set if not already overridden by a flag
     case "$key" in
-      EL_RPC_PORT) if [[ -z "$LOCAL_RPC" ]]; then eval "export $key=\"$value\""; fi ;;
+      EL_RPC_PORT) if [[ -z "$LOCAL_RPC" ]]; then EL_RPC_PORT="$value"; fi ;;
       PUBLIC_RPC)  if [[ -z "$PUBLIC_RPC" ]]; then PUBLIC_RPC="$value"; fi ;;
     esac
   done <<< "$pairs"
@@ -116,38 +116,24 @@ __exec_root() {
 }
 
 __install_tools() {
-  if [[ "$NO_INSTALL" -eq 1 ]]; then
-    return 0
-  fi
-  # Try apt (Debian/Ubuntu images)
-  if __exec sh -c "command -v apt-get" >/dev/null 2>&1; then
-    __exec_root sh -c "apt-get update -qq && apt-get install -y -qq curl jq >/dev/null 2>&1" || true
-    return 0
-  fi
-  # Try apk (Alpine images)
-  if __exec sh -c "command -v apk" >/dev/null 2>&1; then
-    __exec_root sh -c "apk add --quiet curl jq" || true
-    return 0
-  fi
+  [[ "$NO_INSTALL" -eq 1 ]] && return 0
+  __exec_root sh -c '
+    if command -v apt-get >/dev/null 2>&1; then
+      apt-get update -qq && apt-get install -y -qq curl jq >/dev/null 2>&1
+    elif command -v apk >/dev/null 2>&1; then
+      apk add --quiet curl jq
+    fi
+  ' || true
 }
 
 __check_tools() {
-  local missing=0
-  for tool in curl jq; do
-    if ! __exec sh -c "command -v $tool" >/dev/null 2>&1; then
-      missing=1
-      break
-    fi
-  done
-  if [[ "$missing" -eq 1 ]]; then
-    __install_tools
-    # Verify after install attempt
-    for tool in curl jq; do
-      if ! __exec sh -c "command -v $tool" >/dev/null 2>&1; then
-        echo "Required tool '$tool' not available" >&2
-        exit 2
-      fi
-    done
+  if __exec sh -c "command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1"; then
+    return 0
+  fi
+  __install_tools
+  if ! __exec sh -c "command -v curl >/dev/null 2>&1 && command -v jq >/dev/null 2>&1"; then
+    echo "Required tools (curl, jq) not available" >&2
+    exit 2
   fi
 }
 
@@ -155,6 +141,13 @@ __check_tools() {
 __rpc_call() {
   local url="$1" method="$2" params="${3:-[]}"
   __exec curl -s -m 10 -X POST -H "Content-Type: application/json" \
+    -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$method\",\"params\":$params}" \
+    "$url"
+}
+
+__host_rpc_call() {
+  local url="$1" method="$2" params="${3:-[]}"
+  curl -s -m 10 -X POST -H "Content-Type: application/json" \
     -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"$method\",\"params\":$params}" \
     "$url"
 }
@@ -191,8 +184,8 @@ local_block_response=$(__rpc_call "$LOCAL_RPC" "eth_getBlockByNumber" '["latest"
   exit 2
 }
 
-local_height_hex=$(echo "$local_block_response" | __exec jq -r '.result.number // empty') || true
-local_hash=$(echo "$local_block_response" | __exec jq -r '.result.hash // empty') || true
+read -r local_height_hex local_hash <<< \
+  "$(echo "$local_block_response" | __exec jq -r '[.result.number // empty, .result.hash // empty] | @tsv')"
 
 if [[ -z "$local_height_hex" ]]; then
   echo "Local node returned no block data. Is the node running?" >&2
@@ -202,13 +195,13 @@ fi
 local_height=$(__hex_to_dec "$local_height_hex")
 
 # Query public latest block
-public_block_response=$(__rpc_call "$PUBLIC_RPC" "eth_getBlockByNumber" '["latest", false]') || {
+public_block_response=$(__host_rpc_call "$PUBLIC_RPC" "eth_getBlockByNumber" '["latest", false]') || {
   echo "Could not connect to public RPC at $PUBLIC_RPC" >&2
   exit 2
 }
 
-public_height_hex=$(echo "$public_block_response" | __exec jq -r '.result.number // empty') || true
-public_hash=$(echo "$public_block_response" | __exec jq -r '.result.hash // empty') || true
+read -r public_height_hex public_hash <<< \
+  "$(echo "$public_block_response" | __exec jq -r '[.result.number // empty, .result.hash // empty] | @tsv')"
 
 if [[ -z "$public_height_hex" ]]; then
   echo "Public RPC returned no block data" >&2
