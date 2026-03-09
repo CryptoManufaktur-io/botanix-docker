@@ -107,18 +107,26 @@ __exec() {
   fi
 }
 
+__exec_root() {
+  if __in_container; then
+    docker exec -u 0 "$CONTAINER" "$@"
+  else
+    "$@"
+  fi
+}
+
 __install_tools() {
   if [[ "$NO_INSTALL" -eq 1 ]]; then
     return 0
   fi
   # Try apt (Debian/Ubuntu images)
   if __exec sh -c "command -v apt-get" >/dev/null 2>&1; then
-    __exec sh -c "apt-get update -qq && apt-get install -y -qq curl jq >/dev/null 2>&1" || true
+    __exec_root sh -c "apt-get update -qq && apt-get install -y -qq curl jq >/dev/null 2>&1" || true
     return 0
   fi
   # Try apk (Alpine images)
   if __exec sh -c "command -v apk" >/dev/null 2>&1; then
-    __exec sh -c "apk add --quiet curl jq" || true
+    __exec_root sh -c "apk add --quiet curl jq" || true
     return 0
   fi
 }
