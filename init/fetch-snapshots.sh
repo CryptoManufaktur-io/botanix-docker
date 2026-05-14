@@ -109,6 +109,7 @@ fi
 
 # Replace genesis file
 if [ -n "${GENESIS_URL}" ]; then
+  echo "Replacing /config/chain.toml and /config/genesis.json with contentes from ${GENESIS_URL}"
   cd /tmp
 
   rm /config/chain.toml
@@ -116,7 +117,9 @@ if [ -n "${GENESIS_URL}" ]; then
 
   aria2c -c -x6 -s6 --auto-file-renaming=false -o config.tar.lz4 --conditional-get=true --allow-overwrite=true "${GENESIS_URL}"
 
-  lz4 -c -d config.tar.lz4 | tar xvf - -C .
+  lz4 -c -d config.tar.lz4 | tar xvzf - -C .
   mv config/reth/chain.toml /config/chain.toml
   mv config/consensus-node/genesis.json /config/genesis.json
+else
+  echo "Not replacing /config/chain.toml and /config/genesis.json"
 fi
