@@ -17,9 +17,11 @@ services:
     volumes:
       - cometbft-data:/cometbft
       - reth-data:/reth
+      - ./config:/config:rw
     environment:
       - RETH_SNAPSHOT=${RETH_SNAPSHOT}
       - COMETBFT_SNAPSHOT=${COMETBFT_SNAPSHOT}
+      - GENESIS_URL=${GENESIS_URL:-}
 
   cometbft:
     build:

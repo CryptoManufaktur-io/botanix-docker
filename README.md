@@ -17,6 +17,9 @@ The `./botanixd` script can be used as a quick-start:
 
 `nano .env` and adjust variables as needed.
 
+## NB: Genesis file
+If you want to replace genesis file at start then set GENESIS_URL in .env and restart
+
 ### RPC node
 
 - Add `botanix-rpc.yml` to `COMPOSE_FILE` to `.env`

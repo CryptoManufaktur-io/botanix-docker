@@ -106,3 +106,17 @@ if [ -n "${COMETBFT_SNAPSHOT}" ] && [ ! -d "/cometbft/data/state.db" ]; then
     echo "This cometbft snapshot likely won't work until the fetch script has been adjusted for it."
   fi
 fi
+
+# Replace genesis file
+if [ -n "${GENESIS_URL}" ]; then
+  cd /tmp
+
+  rm /config/chain.toml
+  rm /config/genesis.json
+
+  aria2c -c -x6 -s6 --auto-file-renaming=false -o config.tar.lz4 --conditional-get=true --allow-overwrite=true "${GENESIS_URL}"
+
+  lz4 -c -d config.tar.lz4 | tar xvf - -C .
+  mv config/reth/chain.toml /config/chain.toml
+  mv config/consensus-node/genesis.json /config/genesis.json
+fi
